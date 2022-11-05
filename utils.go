@@ -7,22 +7,12 @@ import (
 	"encoding/binary"
 	"math/rand"
 	"net/url"
-	"strconv"
 	"strings"
 	"time"
 )
 
 type Duration struct {
 	time.Duration
-}
-
-func (d *Duration) UnmarshalJSON(data []byte) error {
-	ms, err := strconv.Atoi(string(data))
-	if err != nil {
-		return err
-	}
-	d.Duration = time.Duration(ms * 1000000)
-	return nil
 }
 
 type HREF string
