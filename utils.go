@@ -17,7 +17,7 @@ type Duration struct {
 
 type HREF string
 
-func (h *HREF) Get(api *API, obj interface{}) error {
+func (h *HREF) Get(c *Client, obj interface{}) error {
 	url, err := h.URL()
 	if err != nil {
 		return err
@@ -27,15 +27,15 @@ func (h *HREF) Get(api *API, obj interface{}) error {
 	version := url.Path[:idx]
 	endpoint := url.Path[idx:]
 
-	return api.get(version, endpoint, url.Query(), obj)
+	return c.get(version, endpoint, url.Query(), obj)
 }
 
 func (h *HREF) URL() (*url.URL, error) {
 	return url.Parse(string(*h))
 }
 
-func (im *PagingMeta) Get(api *API, obj interface{}) error {
-	return im.HREF.Get(api, obj)
+func (im *PagingMeta) Get(c *Client, obj interface{}) error {
+	return im.HREF.Get(c, obj)
 }
 
 func generateRandomVerifier() ([]byte, error) {
