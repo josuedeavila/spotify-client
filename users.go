@@ -1,7 +1,9 @@
 package spotifyclient
 
-func (a *API) Me() (*Me, error) {
+type Users service
+
+func (u *Users) Me() (*Me, error) {
 	Me := &Me{}
-	err := a.get("v1", "/me", nil, Me)
+	err := u.client.get("v1", "/me", nil, Me)
 	return Me, err
 }

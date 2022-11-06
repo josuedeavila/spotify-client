@@ -11,46 +11,52 @@ import (
 )
 
 const (
-	apiHost = "api.spotify.com"
+	host = "api.spotify.com"
 	scheme  = "https"
 )
 
-type API struct {
+type service struct {
+	client *Client
+}
+
+type Client struct {
 	token  string
 	host   string
 	scheme string
+
+	Playlists *Playlists
 }
 
-func NewAPI(token string) *API {
-	return &API{
+func NewAPI(token string) *Client {
+	return &Client{
 		token:  token,
-		host:   apiHost,
+		host:   host,
 		scheme: scheme,
 	}
 }
 
-func (a *API) get(apiVersion, endpoint string, query url.Values, res interface{}) error {
-	return a.Do(http.MethodGet, apiVersion, endpoint, query, nil, res)
+func (c *Client) get(apiVersion, endpoint string, query url.Values, res interface{}) error {
+	return c.Do(http.MethodGet, apiVersion, endpoint, query, nil, res)
 }
 
-func (a *API) post(apiVersion, endpoint string, query url.Values, body io.Reader, res interface{}) error {
-	return a.Do(http.MethodPost, apiVersion, endpoint, query, body, res)
+func (c *Client) post(apiVersion, endpoint string, query url.Values, body io.Reader, res interface{}) error {
+	return c.Do(http.MethodPost, apiVersion, endpoint, query, body, res)
 }
 
-func (a *API) put(apiVersion, endpoint string, query url.Values, body io.Reader) error {
-	return a.Do(http.MethodPut, apiVersion, endpoint, query, body, nil)
+func (c *Client) put(apiVersion, endpoint string, query url.Values, body io.Reader) error {
+	return c.Do(http.MethodPut, apiVersion, endpoint, query, body, nil)
 }
 
-func (a *API) delete(apiVersion, endpoint string, query url.Values) error {
-	return a.Do(http.MethodDelete, apiVersion, endpoint, query, nil, nil)
+func (c *Client) delete(apiVersion, endpoint string, query url.Values) error {
+	return c.Do(http.MethodDelete, apiVersion, endpoint, query, nil, nil)
 }
 
-func (a *API) Do(method, apiVersion, endpoint string, query url.Values, body io.Reader, result interface{}) error {
+func (c *Client) Do(method, apiVersion, endpoint string, query url.Values, body io.Reader, result interface{}) error {
 	url := url.URL{
-		Host:     a.host,
+		Host:     c.host,
 		Path:     path.Join(apiVersion, endpoint),
 		RawQuery: query.Encode(),
-		Scheme:   a.scheme,
+		Scheme:   c.scheme,
 	}
 
 	req, err := http.NewRequest(method, url.String(), body)
@@ -58,7 +64,7 @@ func (a *API) Do(method, apiVersion, endpoint string, query url.Values, body io.
 		return err
 	}
 
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", a.token))
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.token))
 
 	client := http.Client{}
 	res, err := client.Do(req)
