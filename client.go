@@ -10,53 +10,71 @@ import (
 	"path"
 )
 
+// Default Spotify API endpoint and scheme.
 const (
-	host = "api.spotify.com"
-	scheme  = "https"
+	defaultHost   = "api.spotify.com"
+	defaultScheme = "https"
 )
 
 type service struct {
-	client *Client
+	client *httpClient
 }
 
-type Client struct {
+// hyypConfig provides access to the Spotify Web API.
+type httpClient struct {
+	Host   string
+	Scheme string
 	token  string
-	host   string
-	scheme string
-
-	Playlists *Playlists
 }
 
-func NewAPI(token string) *Client {
+// Client provides access to the Spotify Web API.
+type Client struct {
+	User     *UserService
+	Playlist *PlaylistService
+}
+
+// NewClient creates a new Spotify Web API client.
+func NewClient(token string, client *httpClient) *Client {
+	if client == nil || client.Host == "" || client.Scheme == "" {
+		client = &httpClient{
+			Host:   defaultHost,
+			Scheme: defaultScheme,
+		}
+	}
+	client.token = token
+
 	return &Client{
-		token:  token,
-		host:   host,
-		scheme: scheme,
+		User:     &UserService{client: client},
+		Playlist: &PlaylistService{client: client},
 	}
 }
 
-func (c *Client) get(apiVersion, endpoint string, query url.Values, res interface{}) error {
-	return c.Do(http.MethodGet, apiVersion, endpoint, query, nil, res)
+// Get sends a GET request to the Spotify Web API.
+func (h *httpClient) get(apiVersion, endpoint string, query url.Values, res interface{}) error {
+	return h.do(http.MethodGet, apiVersion, endpoint, query, nil, res)
 }
 
-func (c *Client) post(apiVersion, endpoint string, query url.Values, body io.Reader, res interface{}) error {
-	return c.Do(http.MethodPost, apiVersion, endpoint, query, body, res)
+// Post sends a POST request to the Spotify Web API.
+func (h *httpClient) post(apiVersion, endpoint string, query url.Values, body io.Reader, res interface{}) error {
+	return h.do(http.MethodPost, apiVersion, endpoint, query, body, res)
 }
 
-func (c *Client) put(apiVersion, endpoint string, query url.Values, body io.Reader) error {
-	return c.Do(http.MethodPut, apiVersion, endpoint, query, body, nil)
+// Put sends a PUT request to the Spotify Web API.
+func (h *httpClient) put(apiVersion, endpoint string, query url.Values, body io.Reader) error {
+	return h.do(http.MethodPut, apiVersion, endpoint, query, body, nil)
 }
 
-func (c *Client) delete(apiVersion, endpoint string, query url.Values) error {
-	return c.Do(http.MethodDelete, apiVersion, endpoint, query, nil, nil)
+// Delete sends a DELETE request to the Spotify Web API.
+func (h *httpClient) delete(apiVersion, endpoint string, query url.Values) error {
+	return h.do(http.MethodDelete, apiVersion, endpoint, query, nil, nil)
 }
 
-func (c *Client) Do(method, apiVersion, endpoint string, query url.Values, body io.Reader, result interface{}) error {
+func (h *httpClient) do(method, apiVersion, endpoint string, query url.Values, body io.Reader, result interface{}) error {
 	url := url.URL{
-		Host:     c.host,
+		Host:     h.Host,
 		Path:     path.Join(apiVersion, endpoint),
 		RawQuery: query.Encode(),
-		Scheme:   c.scheme,
+		Scheme:   h.Scheme,
 	}
 
 	req, err := http.NewRequest(method, url.String(), body)
@@ -64,7 +82,7 @@ func (c *Client) Do(method, apiVersion, endpoint string, query url.Values, body 
 		return err
 	}
 
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.token))
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", h.token))
 
 	client := http.Client{}
 	res, err := client.Do(req)

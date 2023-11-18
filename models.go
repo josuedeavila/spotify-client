@@ -87,6 +87,10 @@ type Artist struct {
 	Name       string   `json:"name"`
 }
 
+type Devices struct {
+	Devices []Device `json:"devices"`
+}
+
 // Device represents a DeviceObject in the Spotify API.
 // https://developer.spotify.com/documentation/web-api/reference/#object-deviceobject
 type Device struct {
@@ -201,4 +205,12 @@ type Track struct {
 	Name             string            `json:"name"`
 	Popularity       int               `json:"popularity"`
 	PreviewURL       string            `json:"preview_url"`
+}
+
+type SetPlay struct {
+	ContextURI string `json:"context_uri"`
+	Offset     struct {
+		Position int `json:"position"`
+	} `json:"offset"`
+	PositionMs int `json:"position_ms"`
 }

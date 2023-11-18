@@ -7,21 +7,20 @@ import (
 	"net/url"
 )
 
-type Playlists service
+type PlaylistService service
 
-func (p *Playlists) List() ([]*Playlist, error) {
+func (p *PlaylistService) List() ([]*Playlist, error) {
 	playlistPage := &struct {
 		PagingMeta
 		Items []*Playlist `json:"items"`
 	}{}
 
 	// TODO: Iterate over all pages of playlists
-
 	err := p.client.get("v1", "/me/playlists", nil, playlistPage)
 	return playlistPage.Items, err
 }
 
-func (p *Playlists) Create(userID, name string, public, collaborative bool, description string) (*Playlist, error) {
+func (p *PlaylistService) Create(userID, name string, public, collaborative bool, description string) (*Playlist, error) {
 	query := make(url.Values)
 	query.Add("user_id", userID)
 
@@ -48,13 +47,13 @@ func (p *Playlists) Create(userID, name string, public, collaborative bool, desc
 	return playlist, err
 }
 
-func (p *Playlists) Fetch(id string) (*Playlist, error) {
+func (p *PlaylistService) Fetch(id string) (*Playlist, error) {
 	playlist := new(Playlist)
 	err := p.client.get("v1", fmt.Sprintf("/playlists/%s", id), nil, playlist)
 	return playlist, err
 }
 
-func (p *Playlists) Update(id, name, description string, public, collaborative bool) (*Playlist, error) {
+func (p *PlaylistService) Update(id, name, description string, public, collaborative bool) (*Playlist, error) {
 	body := &struct {
 		Name          string `json:"name"`
 		Public        bool   `json:"public"`
